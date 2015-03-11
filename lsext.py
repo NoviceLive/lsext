@@ -5,14 +5,32 @@ file format distribution analyzer
 
 by Novice Live, http://novicelive.org :)
 
-1. rewritten from scratch, using os.walk instead of using recursive os.listdir.
+mar 11, 2015
 
-2. added size and number distribution analysis.
+1. added `-i' option, used to ignore the specified directory name, e.g. .git.
 
-3. likely to add the feature of recognizing files based upon their magic numbers rather than the suffixes.
-   obviously, this feature will cost more time.
+2. `argparse' is too verbose! consider wrap it into a function.
+   or, wrap the whole module to make a concise one.
 
-feb 14, 2015
+3. what a bad programmer!
+   what a mess!
+   `operate_all_files'.
+
+4. from now on, use git for version controlling,
+   not merely for transferring data between github and my local computer.
+
+feb 21, 2015
+
+1. employed str.lower since `.pdf' and `.PDF' should be the regarded as the same extension.
+   and assumed that all extensions' cases should be insignificant.
+
+2. changed function names: `compose_function' to `fcompose', `map_function' to `fmap'.
+
+feb 20, 2015
+
+1. completed the refactoring in the core function, `get_all_info'.
+
+feb 19, 2015
 
 1. changed to returning chained generators, instead of a list reduced from a list of lists;
    in the the core function `get_all_info'.
@@ -21,18 +39,16 @@ feb 14, 2015
    you can just collect the information specified by the extracting function which is provided as one of the arguments to `get_all_info'.
    but now i am too exhausted. i have to sleep. let's fix it tomorrow.
 
-feb 19, 2015 happy chinese new year! am i a hard-working and responsible employee, one who still keeps coding to deep night even in the new year's day.
+3. happy chinese new year! am i a hard-working and responsible employee, one who still keeps coding to deep night even in the new year's day.
 
-1. completed the refactoring in the core function, `get_all_info'.
+feb 14, 2015
 
-feb 20, 2015
+1. rewritten from scratch, using os.walk instead of using recursive os.listdir.
 
-1. employed str.lower since `.pdf' and `.PDF' should be the regarded as the same extension.
-   and assumed that all extensions' cases should be insignificant.
+2. added size and number distribution analysis.
 
-2. changed function names: `compose_function' to `fcompose', `map_function' to `fmap'.
-
-feb 21, 2015
+3. likely to add the feature of recognizing files based upon their magic numbers rather than the suffixes.
+   obviously, this feature will cost more time.
 
 Copyright (C) 2015  Gu Zhengxiong
 
@@ -85,15 +101,21 @@ def main():
                         const=True,
                         default=False,
                         help='follow symbolic links')
+    parser.add_argument('-i', '--ignore',
+                        dest='ignore',
+                        nargs='+',
+                        help='human-readable size in the specified unit')
     
     args = parser.parse_args()
-    
+
     if not args.dirs:
         args.dirs.append(os.getcwd())
         
     for i in args.dirs:
         if os.path.isdir(i) and os.access(i, os.F_OK | os.R_OK):
-            all_info = get_all_info(i, get_file_ext if not args.size else get_file_ext_size, args.follow)
+            print("{}: ".format(i))
+            
+            all_info = operate_all_files(i, get_file_ext if not args.size else get_file_ext_size, args.follow, args.ignore if args.ignore else ())
 
             # need two independent generators if we still want to extract size information.
             all_ext_info, all_ext_size_info = itertools.tee(all_info) if args.size else (all_info, None)
@@ -117,7 +139,7 @@ def main():
                 
             else:
                 print((5 * ' ').join(unique_exts))
-                
+              
         else:
             print('could not access: {}\nmay not exist'.format(i))
             
@@ -152,24 +174,37 @@ def stat_print(source, scale):
           )
         for i in source
     ]
+    return
 
-def get_all_info(directory, get_info_func, follow):
+def remove_items(old, items):
+    # use list comprehension to loop over a list, but discard the results.
+    # did this waste anything?
+    # or is there any other better ways? (excluding a for loop.)
+    [old.remove(i) for i in items if i in old]
+    return old
+
+def operate_all_files(directory, operation_func, follow, ignore_dirs):
     """
-    obtain the information of all files in a directory.
-    which information to extract depends on the specified argument `get_info_func'.
-
-    you can easily adapt this functon into a function which performs the specified operations upon all files in the specified directory, and returns the results.
-    actually, it may be more reasonable. e.g. operate_all_files(directory, operation_func, follow).
+    perform the operation specified by `operation_func' upon all files in the specified directory, recursively
     """
     return itertools.chain(
         *(
+            # need a lambda application to introduce an independent namespace,
+            # to avoid the undesired results caused by the undesired lazy evaluation of generator expressions.
             (
-                # need this lambda application to introduce an independent namespace,
-                # to avoid the undesired results caused by the undesired lazy evaluation of generator expressions.
-                (lambda x: (get_info_func(os.path.join(x[0], i)) for i in x[2]))
+                lambda x: (
+                    operation_func(os.path.join(x[0], i))
+                    for i in x[2]
+                )
+            )
+            (
+                (lambda x: (
+                    x[0],
+                    remove_items(x[1], ignore_dirs),
+                    x[2]))
                 (i)
             )
-            for i in os.walk(directory, followlinks=follow)
+            for i in os.walk(directory, topdown=True, followlinks=follow)
         )
     )
 
