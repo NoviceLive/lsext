@@ -104,7 +104,7 @@ def main():
     parser.add_argument('-i', '--ignore',
                         dest='ignore',
                         nargs='+',
-                        help='human-readable size in the specified unit')
+                        help='ignore the specified directory names')
     
     args = parser.parse_args()
 
