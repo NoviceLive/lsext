@@ -5,12 +5,24 @@ file format distribution analyzer
 
 by Novice Live, http://novicelive.org :)
 
+23 mar 2015
+
+1. removed the function, `remove_items', thus making it more unpythonic.
+
+   buggy!
+   undebuggable!
+   illegible!
+
+   just for fun or challenge.  ^_^
+
+   consider pythonizing it next time.
+
 mar 11, 2015
 
 1. added `-i' option, used to ignore the specified directory name, e.g. .git.
 
-2. `argparse' is too verbose! consider wrap it into a function.
-   or, wrap the whole module to make a concise one.
+2. `argparse' is too verbose! consider wrapping it into a function.
+   or, wrapping the whole module to make a concise one.
 
 3. what a bad programmer!
    what a mess!
@@ -176,20 +188,22 @@ def stat_print(source, scale):
     ]
     return
 
-def remove_items(old, items):
-    # use list comprehension to loop over a list, but discard the results.
-    # did this waste anything?
-    # or is there any other better ways? (excluding a for loop.)
-    [old.remove(i) for i in items if i in old]
-    return old
+# def remove_items(old, items):
+#     # use list comprehension to loop over a list, but discard the results.
+#     # did this waste anything?
+#     # or is there any other better ways? (excluding a for loop.)
+#     [old.remove(i) for i in items if i in old]
+#     return old
 
 def operate_all_files(directory, operation_func, follow, ignore_dirs):
     """
-    perform the operation specified by `operation_func' upon all files in the specified directory, recursively
+    perform the operation specified by `operation_func'
+    upon all files in the specified directory and its subdirectories, recursively,
+    excluding those in directoies whose name are specified in `ignore_dirs'.
     """
     return itertools.chain(
         *(
-            # need a lambda application to introduce an independent namespace,
+            # introduce an independent namespace
             # to avoid the undesired results caused by the undesired lazy evaluation of generator expressions.
             (
                 lambda x: (
@@ -198,12 +212,16 @@ def operate_all_files(directory, operation_func, follow, ignore_dirs):
                 )
             )
             (
+                # update the directory list which will be traversed later by os.walk
+                # to let os.walk ignore the specified directory names
                 (lambda x: (
                     x[0],
-                    remove_items(x[1], ignore_dirs),
+                    # removed the function `remove_items', thus making it more unpythonic
+                    list(map(x[1].remove, ignore_dirs)) if any(i in ignore_dirs for i in x[1]) else None,  # remove_items(x[1], ignore_dirs),
                     x[2]))
                 (i)
             )
+            # topdown=True is, in fact, default, merely for emphasis
             for i in os.walk(directory, topdown=True, followlinks=follow)
         )
     )
