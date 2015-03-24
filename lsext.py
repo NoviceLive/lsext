@@ -217,7 +217,7 @@ def operate_all_files(directory, operation_func, follow, ignore_dirs):
                 (lambda x: (
                     x[0],
                     # removed the function `remove_items', thus making it more unpythonic
-                    list(map(x[1].remove, ignore_dirs)) if any(i in ignore_dirs for i in x[1]) else None,  # remove_items(x[1], ignore_dirs),
+                    list(map(x[1].remove, set(ignore_dirs) & set(x[1]))),
                     x[2]))
                 (i)
             )
