@@ -85,22 +85,21 @@ import operator
 import argparse
 
 def main():
-    parser = argparse.ArgumentParser(description='analyze the distribution of different file formats in specified directories', conflict_handler='resolve')
+    parser = argparse.ArgumentParser(
+        description='analyze the distribution of different file formats in specified directories',
+        conflict_handler='resolve')
+
     parser.add_argument('dirs',
                         metavar='dir',
                         nargs='*',
                         help='the directory to analyze')
     parser.add_argument('-s', '--size',
                         dest='size',
-                        action='store_const',
-                        const=True,
-                        default=False,
+                        action='store_true',
                         help='analyze size distribution')
     parser.add_argument('-n', '--number',
                         dest='number',
-                        action='store_const',
-                        const=True,
-                        default=False,
+                        action='store_true',
                         help='analyze number distribution')
     parser.add_argument('-h', '--human',
                         dest='human',
@@ -109,38 +108,40 @@ def main():
                         help='human-readable size in the specified unit')
     parser.add_argument('-f', '--follow',
                         dest='follow',
-                        action='store_const',
-                        const=True,
-                        default=False,
+                        action='store_true',
                         help='follow symbolic links')
     parser.add_argument('-i', '--ignore',
                         dest='ignore',
                         nargs='+',
                         help='ignore the specified directory names')
-    
+
     args = parser.parse_args()
 
     if not args.dirs:
         args.dirs.append(os.getcwd())
-        
+
     for i in args.dirs:
         if os.path.isdir(i) and os.access(i, os.F_OK | os.R_OK):
             print("{}: ".format(i))
-            
-            all_info = operate_all_files(i, get_file_ext if not args.size else get_file_ext_size, args.follow, args.ignore if args.ignore else ())
+
+            all_info = operate_all_files(i,
+                                         get_file_ext if not args.size else get_file_ext_size,
+                                         args.follow,
+                                         args.ignore if args.ignore else ()
+            )
 
             # need two independent generators if we still want to extract size information.
             all_ext_info, all_ext_size_info = itertools.tee(all_info) if args.size else (all_info, None)
 
             # treat extensions' cases insignificant.
             all_exts = list(map(str.lower, all_ext_info)) if not args.size else list(map(fcompose(str.lower, operator.itemgetter(0)), all_ext_info))
-            
+
             unique_exts = sorted(set(all_exts))
-            
+
             if args.number:
                 num = sorted({i:all_exts.count(i) for i in unique_exts}.items(), key=operator.itemgetter(1), reverse=True)
                 stat_print(num, False)
-                
+
             elif args.size:
                 size = {i:0 for i in unique_exts}
                 for i in all_ext_size_info:
@@ -148,13 +149,13 @@ def main():
                     size[str.lower(i[0])] += i[1]
                 size = sorted(size.items(), key=operator.itemgetter(1), reverse=True)
                 stat_print(size, str_to_scale[args.human])
-                
+
             else:
                 print((5 * ' ').join(unique_exts))
-              
+
         else:
             print('could not access: {}\nmay not exist'.format(i))
-            
+
 str_to_scale = {'b':1, 'k':1024, 'm':1024 * 1024, 'g':1024 * 1024 * 1024}
 
 scale_to_str = {1:'B', 1024:'KiB', 1024 * 1024:'MiB', 1024 * 1024 * 1024:'GiB'}
@@ -171,7 +172,7 @@ get_file_size = os.path.getsize
 fmap = lambda f, g: lambda x: (f(x), g(x))
 
 get_file_ext_size = fmap(get_file_ext, get_file_size)
-            
+
 def stat_print(source, scale):
     """
     print all keys in the specified dictionary with consideration of the weight of its value.
@@ -227,4 +228,7 @@ def operate_all_files(directory, operation_func, follow, ignore_dirs):
     )
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('warning: user cancelled')
