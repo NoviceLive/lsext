@@ -126,84 +126,51 @@ str_to_scale = {'b':1, 'k':1024, 'm':1024 * 1024, 'g':1024 * 1024 * 1024}
 scale_to_str = {1:'B', 1024:'KiB', 1024 * 1024:'MiB', 1024 * 1024 * 1024:'GiB'}
 
 
-# note using fcompose is surely slower than directly using f(g(x)).
-# but the direct form is not always applicable to all scenarios.
 fcompose = lambda f, g: lambda x: f(g(x))
-
 
 get_file_ext = fcompose(operator.itemgetter(1), os.path.splitext)
 
-
 get_file_size = os.path.getsize
 
-
-# fcombine or fmap?
 fmap = lambda f, g: lambda x: (f(x), g(x))
-
 
 get_file_ext_size = fmap(get_file_ext, get_file_size)
 
 
 def stat_print(source, scale):
-    """
-    print all keys in the specified dictionary
-    with consideration of the weight of its value.
-    """
     total = sum(map(operator.itemgetter(1), source))
-    [
+
+    for i in source:
         print("{:20} {:<20}{:10} {:<10.2%}".format(
             i[0],
             round(i[1] / scale, 4) if scale else i[1],
             scale_to_str[scale] if scale else '',
             i[1] / total)
-          )
-        for i in source
-    ]
-    return
-
-
-# def remove_items(old, items):
-#     # use list comprehension to loop over a list, but discard the results.
-#     # did this waste anything?
-#     # or is there any other better ways? (excluding a for loop.)
-#     [old.remove(i) for i in items if i in old]
-#     return old
-
-
-def operate_all_files(directory, operation_func, follow, ignore_dirs):
-    """
-    perform the operation specified by `operation_func'
-    upon all files in the specified directory and its subdirectories,
-    recursively,
-    excluding those in directoies whose name are specified in `ignore_dirs'.
-    """
-    return itertools.chain(
-        *(
-            # introduce an independent namespace
-            # to avoid the undesired results caused by
-            # the undesired lazy evaluation of generator expressions.
-            (
-                lambda x: (
-                    operation_func(os.path.join(x[0], i))
-                    for i in x[2]
-                )
-            )
-            (
-                # update the directory list
-                # which will be traversed later by os.walk
-                # to let os.walk ignore the specified directory names
-                (lambda x: (
-                    x[0],
-                    # removed the function `remove_items',
-                    # thus making it more unpythonic
-                    list(map(x[1].remove, set(ignore_dirs) & set(x[1]))),
-                    x[2]))
-                (i)
-            )
-            # topdown=True is, in fact, default, merely for emphasis
-            for i in os.walk(directory, topdown=True, followlinks=follow)
         )
-    )
+
+
+def operate_all_files(d, f, fo, i):
+    return map(f, listdirrec(d, i, fo))
+
+
+def listdirrec(path='.', ignored=(), followlinks=False):
+    ret = iter(())
+
+    for i in os.walk(path, followlinks=False):
+        removemany(i[1], ignored)
+
+        ret = itertools.chain(
+            ret,
+            (lambda x: (os.path.join(x[0], i) for i in x[2]))(i)
+        )
+
+    return ret
+
+
+def removemany(old, values):
+    for i in values:
+        if i in old:
+            old.remove(i)
 
 
 if __name__ == '__main__':
