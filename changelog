@@ -1,0 +1,56 @@
+23 mar 2015
+
+1. removed the function, `remove_items', thus making it more unpythonic.
+
+   buggy!
+   undebuggable!
+   illegible!
+
+   just for fun or challenge.  ^_^
+
+   consider pythonizing it next time.
+
+mar 11, 2015
+
+1. added `-i' option, used to ignore the specified directory name, e.g. .git.
+
+2. `argparse' is too verbose! consider wrapping it into a function.
+   or, wrapping the whole module to make a concise one.
+
+3. what a bad programmer!
+   what a mess!
+   `operate_all_files'.
+
+4. from now on, use git for version controlling,
+   not merely for transferring data between github and my local computer.
+
+feb 21, 2015
+
+1. employed str.lower since `.pdf' and `.PDF' should be the regarded as the same extension.
+   and assumed that all extensions' cases should be insignificant.
+
+2. changed function names: `compose_function' to `fcompose', `map_function' to `fmap'.
+
+feb 20, 2015
+
+1. completed the refactoring in the core function, `get_all_info'.
+
+feb 19, 2015
+
+1. changed to returning chained generators, instead of a list reduced from a list of lists;
+   in the the core function `get_all_info'.
+
+2. please refactor the core function `get_all_info', such that,
+   you can just collect the information specified by the extracting function which is provided as one of the arguments to `get_all_info'.
+   but now i am too exhausted. i have to sleep. let's fix it tomorrow.
+
+3. happy chinese new year! am i a hard-working and responsible employee, one who still keeps coding to deep night even in the new year's day.
+
+feb 14, 2015
+
+1. rewritten from scratch, using os.walk instead of using recursive os.listdir.
+
+2. added size and number distribution analysis.
+
+3. likely to add the feature of recognizing files based upon their magic numbers rather than the suffixes.
+   obviously, this feature will cost more time.
