@@ -4,7 +4,7 @@
 """
 File Format Distribution Analyzer
 
-Copyright (C) 2015 Gu Zhengxiong (rectigu@gmail.com, http://novicelive.org/)
+Copyright (C) 2015 谷征雄 (rectigu@gmail.com, http://novicelive.org/)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,9 +28,7 @@ import operator
 import argparse
 
 
-def main():
-    args = parse_args()
-
+def main(args):
     if not args.dirs:
         args.dirs.append(os.getcwd())
 
@@ -38,19 +36,15 @@ def main():
         if os.path.isdir(i) and os.access(i, os.F_OK | os.R_OK):
             print("{}: ".format(i))
 
-            all_info = operate_all_files(i,
-
-                                         get_file_ext
-                                         if not args.size else
-                                         get_file_ext_size,
-
-                                         args.ignore if args.ignore else (),
-                                         args.follow
+            all_info = operate_all_files(
+                i,
+                get_file_ext if not args.size else get_file_ext_size,
+                args.ignore if args.ignore else (),
+                args.follow
             )
 
             # need two independent generators
             # if we still want to extract size information.
-
             all_ext_info, all_ext_size_info = itertools.tee(
                 all_info
             ) if args.size else (
@@ -100,11 +94,20 @@ scale_to_str = {1:'B', 1024:'KiB', 1024 * 1024:'MiB', 1024 * 1024 * 1024:'GiB'}
 
 fcompose = lambda f, g: lambda x: f(g(x))
 
+
 get_file_ext = fcompose(operator.itemgetter(1), os.path.splitext)
 
-get_file_size = os.path.getsize
+
+def get_file_size(filename):
+    if os.path.islink(filename):
+
+        return 0
+
+    return os.path.getsize(filename)
+
 
 fmap = lambda f, g: lambda x: (f(x), g(x))
+
 
 get_file_ext_size = fmap(get_file_ext, get_file_size)
 
@@ -145,30 +148,31 @@ def removemany(old, values):
 def parse_args():
     parser = argparse.ArgumentParser(
         description="""
-analyze the distribution of different file formats in specified directories
+Analyze The Distribution Of Different File Formats In Specified Directories
 """,
         conflict_handler='resolve')
 
     parser.add_argument('dirs', metavar='dir', nargs='*',
-                        help='the directory to analyze')
+                        help='The directory to analyze')
     parser.add_argument('-s', '--size', dest='size', action='store_true',
-                        help='analyze size distribution')
+                        help='Analyze size distribution')
     parser.add_argument('-n', '--number', dest='number', action='store_true',
-                        help='analyze number distribution')
+                        help='Analyze number distribution')
     parser.add_argument('-h', '--human', dest='human', choices=('k', 'm', 'g'),
                         default='b',
-                        help='human-readable size in the specified unit')
+                        help='Human-readable size in the specified unit')
     parser.add_argument('-f', '--follow', dest='follow', action='store_true',
                         help='follow symbolic links')
     parser.add_argument('-i', '--ignore', dest='ignore',
                         nargs='+',
-                        help='ignore the specified directory names')
+                        help='Ignore the specified directory names')
 
     return parser.parse_args()
 
 
 if __name__ == '__main__':
+    args = parse_args()
     try:
-        main()
+        main(args)
     except KeyboardInterrupt:
         print('[!] user cancelled')
