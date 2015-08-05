@@ -10,11 +10,16 @@ GPL
 """
 
 
-import os
 import sys
+sys.EXIT_SUCCESS = 0
+sys.EXIT_FAILURE = 1
+import argparse
+import logging
+import os
 import itertools
 import operator
-import argparse
+
+from fsvisit import visit_all_files
 
 
 def main(args):
@@ -23,9 +28,9 @@ def main(args):
 
     for i in args.dirs:
         if os.path.isdir(i) and os.access(i, os.F_OK | os.R_OK):
-            print("{}: ".format(i))
+            logging.info("{}: ".format(i))
 
-            all_info = operate_all_files(
+            all_info = visit_all_files(
                 i,
                 get_file_ext if not args.size else get_file_ext_size,
                 args.ignore if args.ignore else (),
@@ -36,21 +41,27 @@ def main(args):
             # if we still want to extract size information.
             all_ext_info, all_ext_size_info = itertools.tee(
                 all_info
-            ) if args.size else (
-                all_info, None
-            )
+            ) if args.size else (all_info, None)
 
             all_exts = list(
                 map(str.lower, all_ext_info)
             ) if not args.size else list(
-                map(fcompose(str.lower, operator.itemgetter(0)), all_ext_info)
+                map(
+                    fcompose(
+                        str.lower,
+                        operator.itemgetter(0)
+                    ),
+                    all_ext_info
+                )
             )
 
             unique_exts = sorted(set(all_exts))
 
             if args.number:
                 num = sorted(
-                    {i:all_exts.count(i) for i in unique_exts}.items(),
+                    {
+                        i:all_exts.count(i) for i in unique_exts
+                    }.items(),
                     key=operator.itemgetter(1),
                     reverse=True
                 )
@@ -75,28 +86,33 @@ def main(args):
             print('could not access: {}\nmay not exist'.format(i))
 
 
-str_to_scale = {'b':1, 'k':1024, 'm':1024 * 1024, 'g':1024 * 1024 * 1024}
+str_to_scale = {
+    'b':1,
+    'k':1024,
+    'm':1024 * 1024,
+    'g':1024 * 1024 * 1024
+}
 
-
-scale_to_str = {1:'B', 1024:'KiB', 1024 * 1024:'MiB', 1024 * 1024 * 1024:'GiB'}
+scale_to_str = {
+    1:'B',
+    1024:'KiB',
+    1024 * 1024:'MiB',
+    1024 * 1024 * 1024:'GiB'
+}
 
 
 fcompose = lambda f, g: lambda x: f(g(x))
-
 
 get_file_ext = fcompose(operator.itemgetter(1), os.path.splitext)
 
 
 def get_file_size(filename):
     if os.path.islink(filename):
-
         return 0
-
     return os.path.getsize(filename)
 
 
 fmap = lambda f, g: lambda x: (f(x), g(x))
-
 
 get_file_ext_size = fmap(get_file_ext, get_file_size)
 
@@ -105,63 +121,91 @@ def stat_print(source, scale):
     total = sum(map(operator.itemgetter(1), source))
 
     for i in source:
-        print("{:20} {:<20}{:10} {:<10.2%}".format(
-            i[0],
-            round(i[1] / scale, 4) if scale else i[1],
-            scale_to_str[scale] if scale else '',
-            i[1] / total)
+        print(
+            "{:20} {:<20}{:10} {:<10.2%}".format(
+                i[0],
+                round(i[1] / scale, 4) if scale else i[1],
+                scale_to_str[scale] if scale else '',
+                i[1] / total
+            )
         )
 
-
-def operate_all_files(path, func, ignored, followlinks):
-    return map(func, listdirrec(path, ignored, followlinks))
-
-
-def listdirrec(path='.', ignored=(), followlinks=False):
-    ret = iter(())
-    for i in os.walk(path, followlinks=followlinks):
-        removemany(i[1], ignored)
-        ret = itertools.chain(
-            ret,
-            (lambda x: (os.path.join(x[0], i) for i in x[2]))(i)
-        )
-
-    return ret
-
-
-def removemany(old, values):
-    for i in values:
-        if i in old:
-            old.remove(i)
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="""
-Analyze The Distribution Of Different File Formats In Specified Directories
-""",
-        conflict_handler='resolve')
+        description="Analyze The Distribution Of File Formats",
+        conflict_handler='resolve'
+    )
 
-    parser.add_argument('dirs', metavar='dir', nargs='*',
-                        help='The directory to analyze')
-    parser.add_argument('-s', '--size', dest='size', action='store_true',
-                        help='Analyze size distribution')
-    parser.add_argument('-n', '--number', dest='number', action='store_true',
-                        help='Analyze number distribution')
-    parser.add_argument('-h', '--human', dest='human', choices=('k', 'm', 'g'),
-                        default='b',
-                        help='Human-readable size in the specified unit')
-    parser.add_argument('-f', '--follow', dest='follow', action='store_true',
-                        help='follow symbolic links')
-    parser.add_argument('-i', '--ignore', dest='ignore',
-                        nargs='+',
-                        help='Ignore the specified directory names')
+    parser.add_argument(
+        'dirs',
+        metavar='dir',
+        nargs='*',
+        help='The directory to analyze'
+    )
+    parser.add_argument(
+        '-s',
+        '--size',
+        dest='size',
+        action='store_true',
+        help='Analyze size distribution'
+    )
+    parser.add_argument(
+        '-n',
+        '--number',
+        dest='number',
+        action='store_true',
+        help='Analyze number distribution'
+    )
+    parser.add_argument(
+        '-h',
+        '--human',
+        dest='human',
+        choices=('k', 'm', 'g'),
+        default='b',
+        help='Human-readable size in the specified unit'
+    )
+    parser.add_argument(
+        '-f',
+        '--follow',
+        dest='follow',
+        action='store_true',
+        help='Follow symbolic links'
+    )
+    parser.add_argument(
+        '-i',
+        '--ignore',
+        dest='ignore',
+        nargs='+',
+        help='Ignore the specified directory names'
+    )
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        action='count',
+        default=0,
+        help='turn on verbose mode, -vv for debugging mode'
+    )
+    parser.add_argument(
+        '-V',
+        '--version',
+        action='version',
+        version='Version 0.1'
+    )
 
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_args()
-    try:
-        main(args)
-    except KeyboardInterrupt:
-        print('[!] user cancelled')
+
+    logging.basicConfig(
+        format='%(levelname)-11s: %(message)s',
+        level={
+            0: logging.WARNING,
+            1: logging.INFO,
+            2: logging.DEBUG
+        }[args.verbose % 3]
+    )
+
+    sys.exit(main(args))
