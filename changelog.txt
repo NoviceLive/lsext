@@ -1,0 +1,75 @@
+0.1.6 -- 1 May 2015
+1. Adapted the unpythonic code.
+
+
+0.1.5 -- 23 Mar 2015
+1. Removed the function, `remove_items',
+   thus making it more unpythonic.
+
+   Buggy!
+   Undebuggable!
+   Illegible!
+
+   Just for fun or challenge.  ^_^
+
+   Consider pythonizing it next time.
+
+
+0.1.4 -- Mar 11, 2015
+1. Added `-i' option, used to ignore the specified directory
+name, e.g. .git.
+
+2. `argparse' is too verbose!
+   Consider wrapping it into a function.
+   Or, wrapping the whole module to make a concise one.
+
+3. What a bad programmer!
+   What a mess!
+   `operate_all_files'.
+
+4. From now on, use git for version controlling,
+   not merely for transferring data between github
+   and my local computer.
+
+
+0.1.3 -- Feb 21, 2015
+1. Employed str.lower since `.pdf' and `.PDF'
+should be the regarded as the same extension.
+And assumed that all extensions' cases should be insignificant.
+
+2. Changed function names: `compose_function'
+to `fcompose', `map_function' to `fmap'.
+
+
+0.1.1 -- Feb 20, 2015
+1. Completed the refactoring in the core function,
+`get_all_info'.
+
+
+0.1.1pre -- Feb 19, 2015
+1. Changed to returning chained generators,
+instead of a list reduced from a list of lists;
+in the the core function `get_all_info'.
+
+2. Please refactor the core function `get_all_info',
+such that, you can just collect the information
+specified by the extracting function
+which is provided as one of the arguments to `get_all_info'.
+But now i am too exhausted. i have to sleep.
+Let's fix it tomorrow.
+
+3. Happy chinese new year! am i a hard-working
+and responsible employee,
+one who still keeps coding to deep night
+even in the new year's day.
+
+
+0.1.0 -- Feb 14, 2015
+1. Rewritten from scratch, using os.walk
+instead of using recursive os.listdir.
+
+2. Added size and number distribution analysis.
+
+3. Likely to add the feature of recognizing files
+based upon their magic numbers rather than the suffixes.
+Obviously, this feature will cost more time.

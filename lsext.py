@@ -45,13 +45,9 @@ def main(args):
 
             all_exts = list(
                 map(str.lower, all_ext_info)
-            ) if not args.size else list(
-                map(
-                    fcompose(
+                if not args.size else map(
                         str.lower,
-                        operator.itemgetter(0)
-                    ),
-                    all_ext_info
+                map(operator.itemgetter(0), all_ext_info)
                 )
             )
 
@@ -101,20 +97,19 @@ scale_to_str = {
 }
 
 
-fcompose = lambda f, g: lambda x: f(g(x))
-
-get_file_ext = fcompose(operator.itemgetter(1), os.path.splitext)
+def get_file_ext(file_path):
+    return os.path.splitext(file_path)[1]
 
 
 def get_file_size(filename):
     if os.path.islink(filename):
         return 0
+
     return os.path.getsize(filename)
 
 
-fmap = lambda f, g: lambda x: (f(x), g(x))
-
-get_file_ext_size = fmap(get_file_ext, get_file_size)
+def get_file_ext_size(file_path):
+    return get_file_ext(file_path), get_file_size(file_path)
 
 
 def stat_print(source, scale):
