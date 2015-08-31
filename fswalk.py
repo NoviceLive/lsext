@@ -8,14 +8,15 @@ import itertools
 import operator
 
 
-def visit_all_files(path, func, ignored, followlinks):
+def walk_directory(path, func, ignored, followlinks):
     return map(func, listdirrec(path, ignored, followlinks))
 
 
 def listdirrec(path='.', ignored=(), followlinks=False):
-    ret = iter(())
+    ret = []
     for i in os.walk(path, followlinks=followlinks):
         removemany(i[1], ignored)
+
         ret = itertools.chain(
             ret,
             (lambda x: (os.path.join(x[0], i) for i in x[2]))(i)

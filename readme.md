@@ -22,4 +22,4 @@ Copyright 2015 Gu Zhengxiong <rectigu@gmail.com>
 
 ## License
 
-GPL
+See license.txt

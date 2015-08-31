@@ -2,11 +2,7 @@
 
 
 """
-File Format Distribution Analyzer
-
 Copyright 2015 Gu Zhengxiong <rectigu@gmail.com>
-
-GPL
 """
 
 
@@ -19,8 +15,7 @@ import os
 import itertools
 import operator
 
-from fsvisit import visit_all_files
-
+import fswalk
 
 def main(args):
     if not args.dirs:
@@ -30,7 +25,7 @@ def main(args):
         if os.path.isdir(i) and os.access(i, os.F_OK | os.R_OK):
             logging.info("{}: ".format(i))
 
-            all_info = visit_all_files(
+            all_info = fswalk.walk_directory(
                 i,
                 get_file_ext if not args.size else get_file_ext_size,
                 args.ignore if args.ignore else (),
