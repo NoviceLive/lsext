@@ -19,8 +19,7 @@ def listdirrec(path='.', ignored=(), followlinks=False):
 
         ret = itertools.chain(
             ret,
-            (lambda x: (os.path.join(x[0], i) for i in x[2]))(i)
-        )
+            (lambda x: (os.path.join(x[0], i) for i in x[2]))(i))
 
     return ret
 
