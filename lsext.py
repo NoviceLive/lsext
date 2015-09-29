@@ -142,7 +142,7 @@ def parse_args():
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+def start_main():
     args = parse_args()
 
     logging.basicConfig(
@@ -152,3 +152,7 @@ if __name__ == '__main__':
         }[args.verbose % 3])
 
     sys.exit(main(args))
+
+
+if __name__ == '__main__':
+    start_main()
