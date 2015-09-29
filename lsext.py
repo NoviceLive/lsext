@@ -6,6 +6,9 @@ Copyright 2015 Gu Zhengxiong <rectigu@gmail.com>
 """
 
 
+__version__ = 'lsext 0.1.0'
+
+
 import sys
 sys.EXIT_SUCCESS = 0
 sys.EXIT_FAILURE = 1
@@ -16,6 +19,7 @@ import itertools
 import operator
 
 import fswalk
+
 
 def main(args):
     if not args.dirs:
@@ -137,7 +141,7 @@ def parse_args():
         '-v', '--verbose', action='count', default=0,
         help='turn on verbose mode, -vv for debugging mode')
     parser.add_argument(
-        '-V', '--version', action='version', version='Version 0.1')
+        '-V', '--version', action='version', version=__version__)
 
     return parser.parse_args()
 
