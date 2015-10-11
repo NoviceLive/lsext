@@ -31,8 +31,6 @@ def main():
         level={
             0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG
         }[args.verbose % 3])
-    if not args.dirs:
-        args.dirs.append(os.getcwd())
 
     for i in args.dirs:
         if os.path.isdir(i) and os.access(i, os.F_OK | os.R_OK):
@@ -134,7 +132,7 @@ def parse_args():
         description="Analyze The Distribution Of File Formats",
         conflict_handler='resolve')
     parser.add_argument(
-        'dirs', metavar='dir', nargs='*',
+        'dirs', metavar='dir', nargs='*', default=[os.getcwd()],
         help='The directory to analyze')
     parser.add_argument(
         '-s', '--size', dest='size', action='store_true',
