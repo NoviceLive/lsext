@@ -7,7 +7,7 @@ setup(
     py_modules=['lsext', 'fswalk'],
 
     entry_points={
-        'console_scripts' : ['lsext=lsext:start_main']
+        'console_scripts' : ['lsext=lsext:main']
     },
 
     classifiers=[
