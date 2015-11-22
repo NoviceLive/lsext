@@ -6,6 +6,8 @@ Copyright 2015 Gu Zhengxiong <rectigu@gmail.com>
 import os
 import itertools
 
+from .utils import removemany
+
 
 def walk_directory(path, func, ignored, followlinks):
     """
@@ -25,12 +27,3 @@ def listdirrec(path='.', ignored=(), followlinks=False):
             ret,
             (lambda x: (os.path.join(x[0], i) for i in x[2]))(i))
     return ret
-
-
-def removemany(old, values):
-    """
-    Remove many values from a list.
-    """
-    for i in values:
-        if i in old:
-            old.remove(i)

@@ -2,4 +2,3 @@ dist
 *.pyc
 *.egg-info
 build
-__pycache__
