@@ -1,4 +1,4 @@
-# lsext
+# lsext - One Of My Most Initial Python Projects
 
 File Extension Distribution Analysis
 
